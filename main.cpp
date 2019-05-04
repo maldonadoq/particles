@@ -1,3 +1,10 @@
+/*
+Trabajo Teorico - Avance hasta el Parcial
+Alumnos:
+	Percy Maldonado Quispe
+	Jesamin Melissa Zevallos Quispe
+*/
+
 #include <iostream>
 #include <GL/glut.h>
 #include "src/engine.h"
@@ -12,7 +19,7 @@
 
 float wsize = 500;
 float hsize = 700;
-unsigned particles = 1000;
+unsigned particles = 2000;
 
 TEngine *engine;
 TCamera *camera;
