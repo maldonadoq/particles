@@ -1,10 +1,3 @@
-/*
-Trabajo Teorico - Avance hasta el Parcial
-Alumnos:
-	Percy Maldonado Quispe
-	Jesamin Melissa Zevallos Quispe
-*/
-
 #include <iostream>
 #include <GL/glut.h>
 #include "src/engine.h"
