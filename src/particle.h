@@ -2,7 +2,6 @@
 #define _PARTICLE_H_
 
 #include <glm/glm.hpp>
-#include <SOIL/SOIL.h>
 #include "random.h"
 
 class TParticle{
@@ -18,13 +17,13 @@ public:
 	TParticle();
     ~TParticle();
 
-    void Init(float);
+    void Init();
 };
 
 TParticle::TParticle(){
 	this->m_position = glm::vec3(0);
     this->m_velocity = glm::vec3(0);
-    this->m_color    = glm::vec4(0);
+    this->m_color    = glm::vec3(0);
     this->m_rotate = 0;
     this->m_age = 0;
     this->m_life_time = 0;
@@ -34,18 +33,19 @@ TParticle::~TParticle(){
 
 }
 
-void TParticle::Init(float _y){
+void TParticle::Init(){
 	m_age = 0;
-	m_life_time = RandomBeetwen(0.5f, 4.0f);
+	m_life_time = RandomBeetwen(0.5f, 7.0f);
 
 	glm::vec3 unitv = RandomUnitVect();
 
 	m_position	= unitv;
-	m_position.y = _y;
-	m_velocity	= unitv*10.0f;
+	m_velocity	=  unitv*10.0f;
+    // m_velocity = glm::vec3(abs(m_velocity.x),abs(m_velocity.),abs(m_velocity.z));
+    m_velocity.y = 10.0f;
     // m_velocity.x *= 3;
 	m_color		= RandomColor3();
-	m_size		= RandomBeetwen(1,2);
+	m_size		= 0.5;//RandomBeetwen(1,2);
 }
 
 #endif

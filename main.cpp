@@ -1,6 +1,5 @@
 #include <iostream>
 #include <GL/glut.h>
-#include "src/e-time.h"
 #include "src/engine.h"
 #include "src/camera.h"
 #include "src/axis.h"
@@ -13,7 +12,7 @@
 
 float wsize = 500;
 float hsize = 700;
-unsigned particles = 500;
+unsigned particles = 1000;
 
 TEngine *engine;
 TCamera *camera;
@@ -134,7 +133,7 @@ int main(int argc, char *argv[]){
     Init();
     InitScene();
 
-	engine = new TEngine(particles, 50);
+	engine = new TEngine(particles);
 	camera = new TCamera(45, wsize/hsize, 0.01f, 500);
 
     glutDisplayFunc(&Draw);

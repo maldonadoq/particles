@@ -5,15 +5,16 @@
 #include <vector>
 #include <assert.h>
 #include "particle.h"
+#include <math.h>
 
 class TEngine{
 private:
 	unsigned m_nparticles;
 	std::vector<TParticle> m_particles;
 	glm::vec3 m_force;
-	float m_y;
+	glm::vec3 m_init;
 public:
-	TEngine(unsigned, float);
+	TEngine(unsigned);
 	TEngine();
 	~TEngine();
 
@@ -22,12 +23,12 @@ public:
 	void Update(float);
 };
 
-TEngine::TEngine(unsigned _nparticles, float _y){
+TEngine::TEngine(unsigned _nparticles){
 	this->m_nparticles = _nparticles;
 	this->m_particles.resize(m_nparticles, TParticle());
 	this->m_force = glm::vec3(0,-9.81,0);
+	this->m_init = glm::vec3(0,50,0);
 
-	this->m_y = _y;
 	InitParticles();
 }
 
@@ -38,7 +39,7 @@ TEngine::TEngine(){
 void TEngine::InitParticles(){
 	assert(m_particles.size() == m_nparticles);
 	for(unsigned i=0; i<m_particles.size(); i++){
-		m_particles[i].Init(m_y);
+		m_particles[i].Init();
 	}
 }
 
@@ -68,16 +69,21 @@ void TEngine::Render(){
 }
 
 void TEngine::Update(float _delta){
-	assert(m_particles.size() == m_nparticles);
+	// assert(m_particles.size() == m_nparticles);
 	for(unsigned i=0; i<m_particles.size(); i++){
 		m_particles[i].m_age += _delta;
 
 		if(m_particles[i].m_age > m_particles[i].m_life_time){
-			m_particles[i].Init(m_y);
+			m_particles[i].Init();
 		}
 
-		m_particles[i].m_velocity += m_force*_delta;
-		m_particles[i].m_position += m_particles[i].m_velocity*_delta;
+		m_particles[i].m_position = m_init +
+						 (m_particles[i].m_velocity*m_particles[i].m_age) + 
+						 (m_force*((float)pow(m_particles[i].m_age, 2)/2));
+
+		//m_particles[i].m_velocity += m_force*_delta;
+		//m_particles[i].m_position += m_particles[i].m_velocity*_delta;
+
 	}
 }
 
