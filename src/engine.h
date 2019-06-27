@@ -1,49 +1,62 @@
 #ifndef _ENGINE_H_
 #define _ENGINE_H_
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/vector_angle.hpp>
 #include <iostream>
 #include <vector>
-#include <assert.h>
+#include <algorithm>
+#include <GL/glut.h>
 #include "particle.h"
 #include <math.h>
 
+#define PI 3.14159265
+
 class TEngine{
 private:
-	unsigned m_nparticles;
 	std::vector<TParticle> m_particles;
 	glm::vec3 m_force;
-	glm::vec3 m_init;
 public:
 	TEngine(unsigned);
 	TEngine();
 	~TEngine();
 
-	void InitParticles();
-	void Render();
+	void InitParticles(unsigned);
+	void Render(glm::vec3, int);
 	void Update(float);
 };
 
 TEngine::TEngine(unsigned _nparticles){
-	this->m_nparticles = _nparticles;
-	this->m_particles.resize(m_nparticles, TParticle());
 	this->m_force = glm::vec3(0,-9.81,0);
-	this->m_init = glm::vec3(0,50,0);
-
-	InitParticles();
+	InitParticles(_nparticles);
 }
 
 TEngine::TEngine(){
 
 }
 
-void TEngine::InitParticles(){
-	assert(m_particles.size() == m_nparticles);
+void TEngine::InitParticles(unsigned _particles){
+	m_particles.resize(_particles);
 	for(unsigned i=0; i<m_particles.size(); i++){
 		m_particles[i].Init();
 	}
 }
 
-void TEngine::Render(){
+bool CompararParticula(TParticle  p1, TParticle p2) {
+    return p1.m_position.z > p2.m_position.z;
+}
+
+void TEngine::Render(glm::vec3 _pos, int _tid){
+	glTranslatef(0.0f,0.0f,0.0f);
+	glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, _tid);
+
+	sort(m_particles.begin(), m_particles.end(), CompararParticula);
+
+	glm::vec3 tmp = glm::normalize((_pos - glm::vec3(0, _pos.y, 0)));
+	float _angle = glm::orientedAngle(glm::vec2(tmp.x, tmp.z), glm::vec2(0,1))*180/PI;
+
 	for(unsigned i=0; i<m_particles.size(); i++){
 		glPushMatrix();
 			glTranslatef(
@@ -51,25 +64,25 @@ void TEngine::Render(){
 				m_particles[i].m_position.y,
 				m_particles[i].m_position.z
 			);
+			// glRotatef(_angle, 0.0f, 1.0f, 0.0f);
 
-			glColor3f(
-				m_particles[i].m_color.x,
-				m_particles[i].m_color.y,
-				m_particles[i].m_color.z
-			);			
-			glutSolidSphere(m_particles[i].m_size,10,10);
+			glBegin(GL_QUADS);
+                glTexCoord2f(1, 1);
+				glVertex3f(m_particles[i].m_size,   m_particles[i].m_size, 0.0f);
+                glTexCoord2f(0, 1);
+				glVertex3f(-m_particles[i].m_size,  m_particles[i].m_size, 0.0f);
+                glTexCoord2f(0, 0);
+				glVertex3f(-m_particles[i].m_size, -m_particles[i].m_size, 0.0f);
+                glTexCoord2f(1, 0);
+				glVertex3f(m_particles[i].m_size,  -m_particles[i].m_size, 0.0f);
+			glEnd();
 		glPopMatrix();		
-		// std::cout << "size: " << i << " is " << m_particles[i].m_size << "\n";
-		/*
-		std::cout << "[" << m_particles[i].m_position[0] << ","
-						 << m_particles[i].m_position[1] << ","
-						 << m_particles[i].m_position[2] << "]\n";
-		*/
-	}	
+	}
+
+	glDisable(GL_BLEND);
 }
 
 void TEngine::Update(float _delta){
-	// assert(m_particles.size() == m_nparticles);
 	for(unsigned i=0; i<m_particles.size(); i++){
 		m_particles[i].m_age += _delta;
 
@@ -77,13 +90,8 @@ void TEngine::Update(float _delta){
 			m_particles[i].Init();
 		}
 
-		m_particles[i].m_position = m_init +
-						 (m_particles[i].m_velocity*m_particles[i].m_age) + 
-						 (m_force*((float)pow(m_particles[i].m_age, 2)/2));
-
-		//m_particles[i].m_velocity += m_force*_delta;
-		//m_particles[i].m_position += m_particles[i].m_velocity*_delta;
-
+		m_particles[i].m_velocity += m_force*_delta;
+		m_particles[i].m_position += m_particles[i].m_velocity*_delta;
 	}
 }
 

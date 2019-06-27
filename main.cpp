@@ -2,7 +2,7 @@
 #include <GL/glut.h>
 #include "src/engine.h"
 #include "src/camera.h"
-#include "src/axis.h"
+#include "src/tmanager.h"
 
 #define RED   	0
 #define GREEN 	0
@@ -12,7 +12,7 @@
 
 float wsize = 500;
 float hsize = 700;
-unsigned particles = 2000;
+unsigned particles = 3000;
 
 TEngine *engine;
 TCamera *camera;
@@ -24,6 +24,9 @@ glm::vec3 etime(0,0,0);
 glm::vec2 mouse(0,0);
 glm::vec2 delta(0,0);
 glm::vec3 center(0,0,0);
+glm::vec3 move(0,0,-200);
+
+int tid = -1;
 
 void Draw(){
 	etime[2] = glutGet(GLUT_ELAPSED_TIME);		// time
@@ -38,17 +41,11 @@ void Draw(){
 	gluPerspective( camera->m_perspective[0], camera->m_perspective[1],
 					camera->m_perspective[2], camera->m_perspective[3]);
 
-	glTranslatef(0,0,-200);
+	glTranslatef(move.x, move.y, move.z);
 	glRotatef(delta.x, 0.0, 1.0, 0.0);
 	glRotatef(delta.y, 1.0, 0.0, 0.0);
 
-	/*std::cout << "[" << camera->m_perspective[0] << ","
-					 << camera->m_perspective[1] << ","
-					 << camera->m_perspective[2] << ","
-					 << camera->m_perspective[3] << "\n";*/	
-	
-	// Axis(center.x, center.y, center.z ,30);
-	engine->Render();
+	engine->Render(move, tid);
 	
 	glutSwapBuffers();
 	glFlush();
@@ -57,21 +54,12 @@ void Draw(){
 void WRedraw(GLsizei _w, GLsizei _h){
 	glViewport(0, 0, _w, _h);
 
+	// camera->m_perspective[1] = _w/_h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	// glOrtho(-msize,msize,-msize,msize, -25.0f, 25.0f);
-	gluPerspective( camera->m_perspective[0], camera->m_perspective[1],
-					camera->m_perspective[2], camera->m_perspective[3]);
-
-	glMatrixMode(GL_MODELVIEW);
 }
 
 void Idle(){
-	// static ETime etime;
-	// delta_time = etime.GetElapsed();
-
-	// std::cout << etime[0]  << " update\n";
-	// engine->Update(delta_time);
 	engine->Update(etime[0]);
 
 	glutPostRedisplay();
@@ -80,17 +68,35 @@ void Idle(){
 void Init(void){	
 	GLfloat position[] = { 0.0f, 5.0f, 10.0f, 0.0 };
 
-	glLightfv(GL_LIGHT0, GL_POSITION, position);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	
-	glShadeModel(GL_SMOOTH);
-
 	glEnable(GL_DEPTH_TEST);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
+    
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_TEXTURE_2D);
 	glClearColor(RED, GREEN, BLUE, ALPHA);
+
+    float LightA[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    float LightD[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float LightS[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  LightA);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  LightD);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, LightS);
+
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+	engine = new TEngine(particles);
+	camera = new TCamera(45, wsize/hsize, 0.01f, 500);
+
+	tid = TextureManager::Inst()->LoadTexture("texture/rain1.png", GL_BGRA_EXT, GL_RGBA);
 }
 
 void InitScene(){
@@ -123,18 +129,16 @@ void MouseMotion(int x, int y){
 	glutPostRedisplay();
 }
 
+// build: g++ main.cpp -o main.out -lGL -lglut -lGLU -lfreeimage
 int main(int argc, char *argv[]){
     glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);	
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(wsize, hsize);
 	glutInitWindowPosition(50,10);
 	glutCreateWindow("Particle System");
     
     Init();
-    InitScene();
-
-	engine = new TEngine(particles);
-	camera = new TCamera(45, wsize/hsize, 0.01f, 500);
+    InitScene();	
 
     glutDisplayFunc(&Draw);
     glutReshapeFunc(&WRedraw);
