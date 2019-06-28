@@ -43,7 +43,7 @@ void TEngine::InitParticles(unsigned _particles){
 }
 
 bool CompararParticula(TParticle  p1, TParticle p2) {
-    return p1.m_position.z > p2.m_position.z;
+    return p1.m_position.z < p2.m_position.z;
 }
 
 void TEngine::Render(glm::vec3 _pos, int _tid){
