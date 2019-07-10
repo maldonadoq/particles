@@ -96,7 +96,7 @@ void Init(void){
 	engine = new TEngine(particles);
 	camera = new TCamera(45, wsize/hsize, 0.01f, 500);
 
-	tid = TextureManager::Inst()->LoadTexture("texture/rain3.png", GL_BGRA_EXT, GL_RGBA);
+	tid = TextureManager::Inst()->LoadTexture("texture/rain4.png", GL_BGRA_EXT, GL_RGBA);
 }
 
 void InitScene(){
